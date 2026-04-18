@@ -33,14 +33,22 @@
 
 ## 🛠️ Quick Installation
 
-Install via **pipx** (recommended for CLI tools):
+### Option 1: Homebrew (Recommended for macOS/Linux)
+This will automatically install system dependencies like **FFmpeg** and **Node.js**.
+
+```bash
+brew tap pendig/tap
+brew install videocut
+```
+
+### Option 2: pipx (Python Standard)
+Ideal if you already have FFmpeg installed.
 
 ```bash
 pipx install videocut-cli
 ```
 
-Or via standard **pip**:
-
+### Option 3: Standard pip
 ```bash
 pip install videocut-cli
 ```

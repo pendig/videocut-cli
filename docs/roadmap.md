@@ -2,15 +2,18 @@
 
 This document outlines the current status and future plans for VideoCut-CLI.
 
-## 🏁 Phase 1: MVP (Nearly Complete)
+## 🏁 Phase 1: MVP (Status: Nearly Complete)
 Goal: A stable tool for daily download and basic editing.
 
 - [x] **Smart Downloader**: 
   - `yt-dlp` wrapper with 403 bypass.
   - Automatic platform detection.
-  - Dynamic naming and folder structure.
-  - Support for audio-only and metadata-only modes.
-  - Cookie persistence system.
+  - Dynamic naming `{Title}_{ID}_{Res}.mp4` and folder structure.
+  - Support for `--extract-audio` and `--metadata-only` modes.
+  - Cookie persistence system (`stored_cookies.txt`).
+- [x] **Distribution**:
+  - Official PyPI package: `videocut-cli`.
+  - Official Homebrew Tap: `pendig/tap/videocut`.
 - [x] **System Doctor**: 
   - Automated dependency checks for FFmpeg and JS runtime.
 - [x] **Basic Editor**: 

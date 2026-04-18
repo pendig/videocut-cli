@@ -1,31 +1,53 @@
-# 🗺️ Project Roadmap & Tasks
+# Development Roadmap
 
-This document tracks the feature status and development plans for VideoCut-CLI.
+This document outlines the current status and future plans for VideoCut-CLI.
 
 ## 🏁 Phase 1: MVP (Status: Nearly Complete)
-- [x] `download` command (yt-dlp wrapper with 403 bypass)
-- [x] Auto-directory structure & Metadata (markdown)
-- [x] Dynamic naming `{title}_{id}_{res}.mp4`
-- [x] `doctor` command (System health check)
-- [x] `edit` command (basic text/image watermark)
-- [ ] Auto-captioning (Whisper integration)
-- [ ] Preset system (YAML)
+Goal: A stable tool for daily download and basic editing.
+
+- [x] **Smart Downloader**: 
+  - `yt-dlp` wrapper with 403 bypass.
+  - Automatic platform detection.
+  - Dynamic naming `{Title}_{ID}_{Res}.mp4` and folder structure.
+  - Support for `--extract-audio` and `--metadata-only` modes.
+  - Cookie persistence system (`stored_cookies.txt`).
+- [x] **Distribution**:
+  - Official PyPI package: `videocut-cli`.
+  - Official Homebrew Tap: `pendig/tap/videocut`.
+- [x] **System Doctor**: 
+  - Automated dependency checks for FFmpeg and JS runtime.
+- [x] **Basic Editor**: 
+  - Text and image watermarking functionality.
+- [ ] **Auto-captioning**:
+  - Integrate OpenAI Whisper for subtitle generation.
+- [ ] **Preset System**:
+  - Implement YAML-based configuration for Reels, Shorts, etc.
 
 ## 🤖 Phase 2: AI Core (Soon)
-- [ ] `ai crop` (MediaPipe/YOLO integration)
-- [ ] `ai highlights` (Transcript analysis)
-- [ ] `ai dub` (ElevenLabs integration)
-- [ ] `ai thumbnail` (Pillow/PIL overlay)
+Goal: Intelligent video transformation for social media.
 
-## 🚀 Phase 3: Publisher (Soon)
-- [ ] YouTube Data API v3 Integration
-- [ ] TikTok/Instagram Graph API Integration
-- [ ] `--schedule` flag support
+- [ ] **AI Auto-Crop**:
+  - Intelligent 16:9 to 9:16 re-framing using YOLO or MediaPipe.
+- [ ] **AI Highlights**:
+  - Automatic detection of key moments based on transcript analysis.
+- [ ] **AI Dubbing**:
+  - Voice translation using ElevenLabs API.
+- [ ] **AI Thumbnail**:
+  - Smart thumbnail generation with text overlays.
+
+## 🚀 Phase 3: Publisher & Integration (Soon)
+Goal: One-click publishing to multiple platforms.
+
+- [ ] **Direct Posting**:
+  - Integration with YouTube Data API, TikTok API, and Instagram Graph API.
+- [ ] **Scheduling**:
+  - Queue videos for future publication.
+- [ ] **IG/TikTok Downloader**:
+  - Full support for Reels and TikTok link extraction.
 
 ## 💎 Phase 4: Final & Polish (Soon)
-- [ ] Plugin system for custom processors
-- [ ] TUI Dashboard (Rich-based)
-- [ ] n8n Webhook triggers
+Goal: Collaborative features and advanced automation.
 
----
-[Back to Index](./README.md)
+- [ ] **Plugin System**: Allow custom processors.
+- [ ] **TUI Dashboard**: Interactive console interface using Rich.
+- [ ] **n8n Integration**: Trigger workflows via webhooks.
