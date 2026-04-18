@@ -8,13 +8,15 @@
 
 - [x] **Smart Downloader**: 
   - High-quality video download (yt-dlp wrapper).
-  - **SABR 403 Bypass**: Automatically uses Android player client for stable YouTube downloads.
-  - **Cookie Persistence**: Saves and reuses cookies from file or browser extracted cache.
+  - **SABR 403 Bypass**: Automatically uses Android player client.
+  - **Cookie Persistence**: Saves and reuses cookies automatically.
   - **Smart Naming**: `{Title}_{ID}_{Resolution}.mp4` format.
-  - **Smart Skip**: Skips already downloaded files to save time and bandwidth.
+  - **Smart Skip**: Skips already downloaded files.
   - **Modes**: Support for `--metadata-only` and `--extract-audio` (MP3).
+- [x] **System Health**:
+  - `videocut doctor` command to check FFmpeg and JS runtime status.
 - [x] **Basic Editor**: 
-  - Text and Image watermarking with position control.
+  - Text and Image watermarking.
 - [ ] **AI Core (Planned)**: Auto-Crop (9:16), Highlights, Dubbing.
 
 ## 📁 Documentation Navigation
@@ -31,15 +33,21 @@
 
 ## 🛠️ Quick Installation
 
-```bash
-# Clone the repository
-git clone https://github.com/penadigital/videocut-cli.git
-cd videocut-cli
+Install via **pipx** (recommended for CLI tools):
 
-# Recommended: Use Python 3.9+ with venv
-python -m venv venv
-source venv/bin/activate
-pip install -e .
+```bash
+pipx install videocut-cli
+```
+
+Or via standard **pip**:
+
+```bash
+pip install videocut-cli
+```
+
+After installation, run the health check:
+```bash
+videocut doctor
 ```
 
 ---

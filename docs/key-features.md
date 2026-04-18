@@ -1,23 +1,26 @@
 # ✨ Key Features of VideoCut-CLI
 
-VideoCut-CLI is not just an ordinary video downloader. It's your personal assistant for content creation. Here are its top features:
+VideoCut-CLI is more than just a video downloader. It is your personal assistant for high-speed content creation.
 
 ## 📽️ Hassle-Free Downloads
-Download high-quality videos (up to 1080p) from various platforms. Videos are automatically organized into neat folders based on their Video ID.
+Download high-quality videos (up to 1080p/4K) from YouTube, Instagram, and more. 
+- **Smart Naming**: Files are saved with readable titles and IDs.
+- **SABR Bypass**: Advanced technology to avoid YouTube "403 Forbidden" errors.
+- **Cookie Reuse**: Log in once, and the tool remembers your session safely.
 
-## ✂️ Auto-Edit with Presets
-No need to set FFmpeg manually. Use pre-built presets:
-- **Reels**: Crop to 9:16, add captions, and watermarks.
-- **Shorts**: Optimized for the YouTube Shorts algorithm.
+## ✂️ Auto-Edit & Watermark
+No need to open a heavy video editor. Add your brand identity instantly.
+- **Text Watermarks**: Place your handle anywhere on the frame.
+- **Image Overlays**: Add your logo as a professional watermark.
+- **Dynamic Positioning**: Choose between top-left, bottom-right, or center.
 
-## 🎙️ AI Dubbing & Subtitling
-Tired of foreign language videos? Translate the audio into your preferred language with human-like accuracy using ElevenLabs technology.
+## 🎙️ AI-Powered Transformation (Soon)
+- **Auto-Crop**: Intelligent landscape to portrait (9:16) conversion using AI to track the subject.
+- **Dubbing**: Change the video's language using human-like AI voices.
+- **Automatic Captions**: Generate perfectly synced subtitles with Whisper AI.
 
-## 🤖 Smart AI Crop
-Have a landscape video but want to post it on TikTok? Our AI will detect where the subject is and automatically crop it so they stay centered in the frame.
-
-## 📦 Batch Processing
-Have 100 video links? Just put them in a text file, and VideoCut-CLI will process them all for you while you grab a coffee.
-
----
-[Back to Main Menu](../README.md)
+## 📦 Batch & Efficiency
+- **Metadata-Only**: Research content without downloading the full video.
+- **Audio Extraction**: Instantly get high-quality MP3s for podcasts or remixes.
+- **Smart Skip**: Never download the same file twice. If it exists, we skip it.
+- **Batch Mode (Soon)**: Process hundreds of links from a single text file.

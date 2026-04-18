@@ -1,17 +1,19 @@
-# 👨‍💻 User Documentation
+# VideoCut-CLI Documentation
 
-Welcome to VideoCut-CLI! This folder contains guides to help you use the application easily, without needing to worry about complex technical jargon.
+Welcome to the documentation for **VideoCut-CLI**, an AI-powered automation tool for Content Creators.
 
 ## 📖 Table of Contents
-1. [Getting Started (User Guide)](./user-guide.md)
-2. [Awesome Features](./key-features.md)
 
-## ✨ What Can You Do?
-- **Direct Download**: Grab videos from YouTube or other social media simply by copying and pasting a link.
-- **Auto-Edit & Crop**: Convert landscape (16:9) videos to portrait (9:16) for Reels/TikTok/Shorts in seconds.
-- **Instant Captions**: Automatically add subtitles to your videos to make them more engaging.
-- **AI Dubbing**: Change the language of your video into Indonesian or other languages using human-like AI voices.
-- **Direct Posting**: Upload the final result to TikTok or IG without opening a browser.
+### 🚀 Getting Started
+1. [Installation & Quick Start](./user-guide.md) - How to install and run your first download.
+2. [Key Features](./key-features.md) - Overview of what VideoCut-CLI can do for you.
+3. [CLI Command Reference](./commands.md) - Detailed list of all commands and parameters.
+
+### 🛠️ Technical Reference
+4. [Architecture](./architecture.md) - System design and project structure.
+5. [Data Workflow](./workflow.md) - How files are processed and organized.
+6. [Development Roadmap](./roadmap.md) - Current progress and upcoming features.
+7. [Changelog](./CHANGELOG.md) - History of changes and versions.
 
 ---
-[Back to Main Menu](../README.md)
+*Created with ❤️ by [Pena Digital](https://penadigital.tech)*

@@ -24,6 +24,9 @@ This document serves as a quick reference for all available CLI commands in Vide
 | `--position` | Option | Watermark position (bottom_right, etc.) |
 | `-o, --output` | Option | Path for the output video |
 
+## 🏥 `videocut doctor`
+Checks system dependencies (FFmpeg, Node.js) and environment health.
+
 ## 🤖 `videocut ai` (Planned)
 - `ai crop`: AI-powered re-framing to 9:16.
 - `ai highlights`: Detect key moments in long-form videos.

@@ -1,32 +1,49 @@
 # 🚀 Getting Started Guide
 
-Want to start creating content with VideoCut-CLI? Follow these simple steps below!
+Follow these steps to start automating your video content creation.
 
-## 1. Download Video
-First, let's grab the video. Just copy the YouTube link and type this command:
+## 0. Installation
+The recommended way to install VideoCut-CLI is via **pipx** to ensure an isolated environment.
 
 ```bash
-# Standard download (Video + Metadata)
-videocut download https://youtube.com/shorts/FwlIyiMeNAw
+pipx install videocut-cli
+```
+
+### Health Check
+After installation, run the doctor command to verify system dependencies (like FFmpeg).
+```bash
+videocut doctor
+```
+
+## 1. Downloading Content
+VideoCut-CLI automatically handles restrictions and organizes your files.
+
+```bash
+# Full download (Video + Metadata)
+videocut download "https://youtube.com/shorts/FwlIyiMeNAw"
 
 # Audio only (MP3)
-videocut download https://youtube.com/shorts/FwlIyiMeNAw --extract-audio
+videocut download "URL" --extract-audio
 
-# Metadata only (Small download, no video)
-videocut download https://youtube.com/shorts/FwlIyiMeNAw --metadata-only
+# Metadata only (No video, fast research)
+videocut download "URL" --metadata-only
 ```
-*Note: VideoCut-CLI automatically handles YouTube restrictions and remembers your cookies!*
 
-## 2. Edit to Your Likings
-Once you have the video, you can add watermarks easily:
+## 2. Basic Editing
+Add your brand identity to any local video file.
 
 ```bash
-videocut edit ./path/to/video.mp4 --text "@MyAccount" --position bottom_right
+# Add a text watermark
+videocut edit ./video.mp4 --text "@MyAccount" --position bottom_right
+
+# Add an image logo
+videocut edit ./video.mp4 --image ./logo.png
 ```
 
-## 3. Use AI Powers (Coming Soon)
-- **Auto-Crop**: Let the AI find the most important part of the video.
-- **Dubbing**: Change the voice in the video to a cool AI voice.
+## 3. Advanced Features (Soon)
+- **AI Auto-Crop**: Transform 16:9 videos to 9:16 portrait.
+- **Voice Dubbing**: Translate your video audio using AI.
+- **Batch Processing**: Download and edit hundreds of links at once.
 
 ---
-💡 **Tip**: If you're unsure of what command to use next, you can always type `videocut --help` to see the help menu.
+💡 **Tip**: Type `videocut --help` or `videocut download --help` for a full list of options.
