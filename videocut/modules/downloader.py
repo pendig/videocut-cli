@@ -1,6 +1,7 @@
 import os
 import json
 import shutil
+import re
 from pathlib import Path
 import yt_dlp
 from rich.console import Console
@@ -18,21 +19,23 @@ class SilentLogger:
     def warning(self, msg): pass
     def error(self, msg): pass
 
+def slugify(text: str) -> str:
+    """Makes a string filename-friendly."""
+    text = re.sub(r'[^\w\s-]', '', text).strip()
+    text = re.sub(r'[-\s]+', '_', text)
+    return text
+
 def check_ffmpeg():
     """Checks if ffmpeg is installed and returns the path."""
-    # First check system path
     system_ffmpeg = shutil.which("ffmpeg")
     if system_ffmpeg:
         return system_ffmpeg
-    
-    # Fallback to imageio-ffmpeg bundled binary
     try:
         bundled_ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
         if bundled_ffmpeg:
             return bundled_ffmpeg
     except Exception:
         pass
-    
     return None
 
 def check_js_runtime():
@@ -54,15 +57,13 @@ def download_video(
     """
     Downloads a video from the specified URL using yt-dlp.
     Stores files in {output_dir}/<video_id>/.
+    Naming: {title}_{video_id}_{quality}p.mp4
     """
     ffmpeg_path = check_ffmpeg()
     if not ffmpeg_path:
-        console.print("[bold red]Error: FFmpeg not found! Please install it via Homebrew or ensure imageio-ffmpeg is installed.[/bold red]")
+        console.print("[bold red]Error: FFmpeg not found![/bold red]")
         return None
         
-    js_runtime = check_js_runtime()
-    
-    # Common options to ensure silence
     base_ydl_opts = {
         'quiet': True,
         'no_warnings': True,
@@ -86,6 +87,7 @@ def download_video(
             info = ydl.extract_info(url, download=False)
             video_id = info.get('id', 'unknown_id')
             title = info.get('title', 'Unknown Title')
+            slug = slugify(title)
         except Exception:
             return None
 
@@ -93,20 +95,22 @@ def download_video(
     video_dir = output_dir / video_id
     os.makedirs(video_dir, exist_ok=True)
     
-    # Check if files already exist to skip
-    metadata_path = video_dir / "metadata.md"
-    audio_file = video_dir / f"audio_{video_id}.mp3"
-    video_file_base = video_dir / f"video_{quality}p"
+    # Filename components
+    base_name = f"{slug}_{video_id}"
+    metadata_filename = f"metadata_{video_id}.md"
+    metadata_path = video_dir / metadata_filename
     
-    # Check for existing video (any mp4)
-    existing_video = list(video_dir.glob(f"video_{quality}p.mp4"))
+    # Check if files already exist to skip
+    # We check by ID suffix to be safe
+    existing_video = list(video_dir.glob(f"*_{video_id}_{quality}p.mp4"))
+    existing_audio = list(video_dir.glob(f"*_{video_id}_audio.mp3"))
     
     should_download = False
     if metadata_only:
         if not metadata_path.exists():
             should_download = True
     elif extract_audio:
-        if not audio_file.exists():
+        if not existing_audio:
             should_download = True
     else:
         if not existing_video:
@@ -126,7 +130,7 @@ def download_video(
     ydl_opts = {
         **base_ydl_opts,
         'format': format_str,
-        'outtmpl': str(video_dir / f'video_{quality}p.%(ext)s'),
+        'outtmpl': str(video_dir / f'{base_name}_{quality}p.%(ext)s'),
         'writethumbnail': download_thumbnail,
         'writesubtitles': download_transcript,
         'writeautomaticsub': download_transcript,
@@ -136,6 +140,7 @@ def download_video(
         'nocheckcertificate': True,
         'ignoreerrors': True,
         'no_color': True,
+        'restrictfilenames': True,
         'extractor_args': {
             'youtube': {
                 'player_client': ['android', 'web_embedded', 'ios', 'tv', 'web'],
@@ -154,7 +159,7 @@ def download_video(
         ydl_opts['skip_download'] = True
     elif extract_audio:
         ydl_opts['format'] = 'bestaudio/best'
-        ydl_opts['outtmpl'] = str(video_dir / f'audio_{video_id}.%(ext)s')
+        ydl_opts['outtmpl'] = str(video_dir / f'{base_name}_audio.%(ext)s')
         ydl_opts['postprocessors'].append({
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
@@ -185,10 +190,10 @@ def download_video(
         try:
             ydl.download([url])
             
-            # Post-process: convert info.json to metadata.md
+            # Post-process: convert info.json to metadata_{id}.md
             info_json_path = list(video_dir.glob("*.info.json"))
             if info_json_path:
-                create_metadata_md(info_json_path[0], video_dir / "metadata.md")
+                create_metadata_md(info_json_path[0], metadata_path)
                 
             console.print("[bold green]✓ Complete![/bold green]")
             return video_dir
