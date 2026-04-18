@@ -4,38 +4,41 @@
 
 ---
 
-## 🚀 Project Overview
+## 🚀 Current Status (Phase 1: MVP)
 
-- **Core Stack**: Python 3.11+, FFmpeg, yt-dlp.
-- **AI Engine**: ElevenLabs (Dubbing), Whisper (Transcripts), YOLO/MediaPipe (Auto-Crop).
-- **Goal**: Automatically transform long-form (landscape) videos into viral short-form (portrait/9:16) content.
+- [x] **Smart Downloader**: 
+  - High-quality video download (yt-dlp wrapper).
+  - **SABR 403 Bypass**: Automatically uses Android player client for stable YouTube downloads.
+  - **Cookie Persistence**: Saves and reuses cookies from file or browser extracted cache.
+  - **Smart Naming**: `{Title}_{ID}_{Resolution}.mp4` format.
+  - **Smart Skip**: Skips already downloaded files to save time and bandwidth.
+  - **Modes**: Support for `--metadata-only` and `--extract-audio` (MP3).
+- [x] **Basic Editor**: 
+  - Text and Image watermarking with position control.
+- [ ] **AI Core (Planned)**: Auto-Crop (9:16), Highlights, Dubbing.
 
 ## 📁 Documentation Navigation
 
-Choose the documentation path that fits your needs:
-
-### 👨‍💻 [User Documentation (Human-Friendly)](./docs/README.md)
+### 👨‍💻 [User Documentation](./docs/README.md)
 *Path: `/docs`*
-- Feature explanations in simple language.
-- Quick start guide for non-technical users.
-- Frequently used command list.
+- Feature explanations and Quick start guide.
 
-### 🤖 [AI Agent Context (Technical)](./context/README.md)
+### 🤖 [AI Agent Context](./context/README.md)
 *Path: `/context`*
-- System architecture and technical diagrams.
-- Folder structures and data schemas.
-- Development guidelines for AI/Developers to modify or extend the code.
+- System architecture, schemas, and roadmap.
 
 ---
 
-## 🛠️ Quick Installation (Planned)
+## 🛠️ Quick Installation
 
 ```bash
 # Clone the repository
 git clone https://github.com/penadigital/videocut-cli.git
-cd video-cut-cli
+cd videocut-cli
 
-# Install dependencies
+# Recommended: Use Python 3.9+ with venv
+python -m venv venv
+source venv/bin/activate
 pip install -e .
 ```
 

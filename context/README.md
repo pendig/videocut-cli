@@ -8,11 +8,11 @@ This folder contains structured technical documentation specifically designed fo
 3. [Roadmap & Tasks](./roadmap.md) - Development status and feature plans.
 
 ## 🛠️ Tech Stack for AI
-- **Language**: Python 3.11+
+- **Language**: Python 3.9+
 - **CLI Framework**: Typer (Click-based)
 - **Video Engine**: FFmpeg (via subprocess)
 - **Downloader**: yt-dlp
-- **AI Models**: 
+- **AI Models (Planned)**: 
   - ElevenLabs (Dubbing/TTS)
   - Whisper (Transcribing)
   - YOLO/MediaPipe (Object Detection for Crop)

@@ -10,6 +10,8 @@ This document serves as a quick reference for all available CLI commands in Vide
 | `-o, --output` | Option | Custom output directory |
 | `--no-thumb` | Flag | Skip downloading thumbnail |
 | `--no-transcript` | Flag | Skip generating transcript |
+| `--metadata-only` | Flag | Only download metadata/thumbnail/transcript |
+| `--extract-audio` | Flag | Extract audio to MP3 |
 | `--cookies-browser` | Option | Browser to extract cookies from (e.g., chrome) |
 | `--cookies` | Option | Path to a Netscape cookies.txt file |
 
@@ -27,14 +29,6 @@ This document serves as a quick reference for all available CLI commands in Vide
 - `ai highlights`: Detect key moments in long-form videos.
 - `ai dub`: Automatic dubbing using ElevenLabs API.
 - `ai thumbnail`: Generate thumbnails with text overlays.
-
-## 🚀 `videocut publish` (Planned)
-- `--platform`: Target platform [youtube, ig, tiktok, x].
-- `--schedule`: Scheduled upload time (YYYY-MM-DD HH:MM).
-
-## ⚙️ `videocut config` (Planned)
-- `--set KEY VALUE`: Save API keys in `~/.videocut/config.yaml`.
-- `--list`: Show all current configurations.
 
 ---
 [Back to Index](./README.md)

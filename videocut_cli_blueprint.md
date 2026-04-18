@@ -5,7 +5,19 @@
 
 ---
 
+## ⚡ Recent Changes (Changelog)
+- **v0.2.0**:
+    - Implementasi dynamic filename: `{slug}_{id}_{resolution}.mp4`.
+    - Menambahkan mode `--metadata-only` dan `--extract-audio` (MP3).
+    - Menambahkan sistem **Cookie Persistence**: menyimpan cookies di `~/.videocut/stored_cookies.txt` dan auto-reuse.
+    - Implementasi **Smart Skip**: otomatis melewati download jika file (video/audio/metadata) sudah ada.
+    - Menghilangkan noise output CLI (deprecation & SABR warnings).
+    - Memperbaiki penamaan metadata menjadi `metadata_{id}.md`.
+
+---
+
 ## 1. Arsitektur Aplikasi
+...
 
 ### Layer Overview
 
