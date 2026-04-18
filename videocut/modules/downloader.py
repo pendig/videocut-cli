@@ -47,7 +47,9 @@ def download_video(
     download_thumbnail: bool = True,
     download_transcript: bool = True,
     cookies_browser: Optional[str] = None,
-    cookies_file: Optional[Path] = None
+    cookies_file: Optional[Path] = None,
+    metadata_only: bool = False,
+    extract_audio: bool = False
 ) -> Optional[Path]:
     """
     Downloads a video from the specified URL using yt-dlp.
@@ -59,11 +61,6 @@ def download_video(
         return None
         
     js_runtime = check_js_runtime()
-    if not js_runtime:
-        console.print("[bold yellow]Warning: No JS runtime (Node.js/Deno) found.[/bold yellow]")
-        console.print("[dim]YouTube 403 errors are common without a JS runtime. Consider 'brew install deno'.[/dim]")
-    else:
-        console.print(f"[dim]JS Runtime Found: {js_runtime}[/dim]")
     
     # Common options to ensure silence
     base_ydl_opts = {
@@ -73,7 +70,7 @@ def download_video(
         'noprogress': True,
     }
 
-    # We first extract info without downloading to get the video id
+    # Extract info first
     ydl_opts_extract = {
         **base_ydl_opts,
         'extract_flat': 'in_playlist',
@@ -89,13 +86,37 @@ def download_video(
             info = ydl.extract_info(url, download=False)
             video_id = info.get('id', 'unknown_id')
             title = info.get('title', 'Unknown Title')
-            console.print(f"[bold cyan]Video Found:[/bold cyan] {title}")
         except Exception:
             return None
 
-    # Target directory for this specific video
+    # Target directory
     video_dir = output_dir / video_id
     os.makedirs(video_dir, exist_ok=True)
+    
+    # Check if files already exist to skip
+    metadata_path = video_dir / "metadata.md"
+    audio_file = video_dir / f"audio_{video_id}.mp3"
+    video_file_base = video_dir / f"video_{quality}p"
+    
+    # Check for existing video (any mp4)
+    existing_video = list(video_dir.glob(f"video_{quality}p.mp4"))
+    
+    should_download = False
+    if metadata_only:
+        if not metadata_path.exists():
+            should_download = True
+    elif extract_audio:
+        if not audio_file.exists():
+            should_download = True
+    else:
+        if not existing_video:
+            should_download = True
+            
+    if not should_download:
+        console.print(f"[bold yellow]Skipping:[/bold yellow] [green]{title}[/green] (Files already exist)")
+        return video_dir
+
+    console.print(f"[bold cyan]Video Found:[/bold cyan] {title}")
     
     # Map quality to format string
     format_str = f'18/22/bestvideo[height<={quality}][ext=mp4]+bestaudio[ext=m4a]/best[height<={quality}][ext=mp4]/best'
@@ -110,16 +131,7 @@ def download_video(
         'writesubtitles': download_transcript,
         'writeautomaticsub': download_transcript,
         'subtitleslangs': ['en', 'id'],
-        'postprocessors': [
-            {
-                'key': 'FFmpegVideoConvertor',
-                'preferedformat': 'mp4',
-            },
-            {
-                'key': 'FFmpegThumbnailsConvertor',
-                'format': 'jpg',
-            }
-        ],
+        'postprocessors': [],
         'writeinfojson': True,
         'nocheckcertificate': True,
         'ignoreerrors': True,
@@ -137,31 +149,51 @@ def download_video(
         'retries': 5,
         'socket_timeout': 30,
     }
-    
+
+    if metadata_only:
+        ydl_opts['skip_download'] = True
+    elif extract_audio:
+        ydl_opts['format'] = 'bestaudio/best'
+        ydl_opts['outtmpl'] = str(video_dir / f'audio_{video_id}.%(ext)s')
+        ydl_opts['postprocessors'].append({
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        })
+    else:
+        # Standard video post-processors
+        ydl_opts['postprocessors'].extend([
+            {
+                'key': 'FFmpegVideoConvertor',
+                'preferedformat': 'mp4',
+            },
+            {
+                'key': 'FFmpegThumbnailsConvertor',
+                'format': 'jpg',
+            }
+        ])
+
     if cookies_browser:
         ydl_opts['cookiesfrombrowser'] = (cookies_browser, None, None, None)
     elif cookies_file:
         ydl_opts['cookiefile'] = str(cookies_file)
 
-    console.print(f"[bold blue]Downloading...[/bold blue] [dim](this may take a moment)[/dim]")
+    action_text = "Downloading..." if not metadata_only else "Extracting metadata..."
+    console.print(f"[bold blue]{action_text}[/bold blue] [dim](this may take a moment)[/dim]")
     
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
             ydl.download([url])
             
-            video_files = [f for f in video_dir.iterdir() if f.name.startswith("video_") and f.suffix not in ['.webp', '.jpg', '.json', '.md', '.vtt']]
-            
-            if not video_files:
-                return None
-
-            console.print("[bold green]✓ Download complete![/bold green]")
-            
+            # Post-process: convert info.json to metadata.md
             info_json_path = list(video_dir.glob("*.info.json"))
             if info_json_path:
                 create_metadata_md(info_json_path[0], video_dir / "metadata.md")
                 
+            console.print("[bold green]✓ Complete![/bold green]")
             return video_dir
-        except Exception:
+        except Exception as e:
+            console.print(f"[red]Error during download: {e}[/red]")
             return None
 
 def create_metadata_md(json_path: Path, md_path: Path):

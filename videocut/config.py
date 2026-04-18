@@ -15,6 +15,10 @@ def get_cookie_cache_path(browser: str) -> Path:
     """Returns the path for cached cookies of a specific browser."""
     return get_config_dir() / f"cookies_{browser}.txt"
 
+def get_cookie_store_path() -> Path:
+    """Returns the path for the persistent stored cookies.txt."""
+    return get_config_dir() / "stored_cookies.txt"
+
 def get_download_dir() -> Path:
     """Returns the default base directory for downloads."""
     return DEFAULT_DOWNLOAD_DIR

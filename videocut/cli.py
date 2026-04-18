@@ -4,14 +4,16 @@ from typing import Optional
 from pathlib import Path
 import warnings
 import os
+import shutil
 
 # Suppress all warnings to ensure clean CLI output
 warnings.simplefilter("ignore")
 os.environ["PYTHONWARNINGS"] = "ignore"
+os.environ["YT_DLP_NO_DEPRECATION_WARNING"] = "1"
 
 from videocut.modules.downloader import download_video
 from videocut.modules.editor import add_text_watermark, add_image_watermark
-from videocut.config import get_platform_dir, get_cookie_cache_path
+from videocut.config import get_platform_dir, get_cookie_cache_path, get_cookie_store_path
 import subprocess
 
 app = typer.Typer(help="VideoCut CLI - Video and Download Automation Tool")
@@ -24,95 +26,72 @@ def download(
     output: Optional[Path] = typer.Option(None, "-o", "--output", help="Custom output directory"),
     no_thumb: bool = typer.Option(False, "--no-thumb", help="Skip downloading thumbnail"),
     no_transcript: bool = typer.Option(False, "--no-transcript", help="Skip generating transcript"),
+    metadata_only: bool = typer.Option(False, "--metadata-only", help="Only download metadata/thumbnail/transcript"),
+    extract_audio: bool = typer.Option(False, "--extract-audio", help="Extract audio to MP3"),
     platform: Optional[str] = typer.Option(None, "--platform", help="Force platform name for directory (default: auto-detected)"),
     cookies_browser: Optional[str] = typer.Option(None, "--cookies-browser", help="Browser to extract cookies from"),
-    cookies: Optional[Path] = typer.Option(None, "--cookies", help="Path to a Netscape cookies.txt file. Recommended: Use 'Get cookies.txt LOCALLY' Chrome extension.")
+    cookies: Optional[Path] = typer.Option(None, "--cookies", help="Path to a Netscape cookies.txt file.")
 ):
-    # Transform Shorts URL to standard Video URL (helpful for some SABR issues)
+    # Transform Shorts URL
     if "youtube.com/shorts/" in url:
         video_id = url.split("youtube.com/shorts/")[1].split("?")[0].split("&")[0]
         url = f"https://www.youtube.com/watch?v={video_id}"
         console.print(f"[dim]Converted Shorts URL to: {url}[/dim]")
 
-    # Auto-detect platform from URL if not specified
     if platform is None:
         if "youtube.com" in url or "youtu.be" in url:
             platform = "youtube"
-        elif "instagram.com" in url:
-            platform = "instagram"
         else:
-            platform = "instagram" # fallback as requested
+            platform = "instagram"
             
-    if output:
-        # User specified custom output directory
-        target_dir = output
-    else:
-        # Use default directory based on platform
-        target_dir = get_platform_dir(platform)
-        
-    console.print(f"[bold cyan]Platform:[/bold cyan] [green]{platform}[/green]")
-    console.print(f"[bold cyan]Saving to:[/bold cyan] [green]{target_dir}[/green]")
-    
-    if cookies_browser:
-        # Check if we have a cached cookie file
+    target_dir = output if output else get_platform_dir(platform)
+    stored_cookies = get_cookie_store_path()
+
+    active_cookies = None
+    if cookies:
+        console.print(f"[dim]Saving provided cookies to {stored_cookies}[/dim]")
+        shutil.copy(cookies, stored_cookies)
+        active_cookies = stored_cookies
+    elif cookies_browser:
         cache_path = get_cookie_cache_path(cookies_browser)
         if not cache_path.exists():
-            console.print(f"[bold yellow]First time extracting {cookies_browser} cookies...[/bold yellow]")
-            console.print("[dim]Note: If this hangs, please ensure Chrome is completely closed to unlock the database.[/dim]")
+            console.print(f"[bold yellow]Extracting {cookies_browser} cookies...[/bold yellow]")
             try:
-                # Use yt-dlp to extract cookies to our cache file
-                # This only happens once
                 subprocess.run([
-                    "yt-dlp", 
-                    "--cookies-from-browser", cookies_browser, 
-                    "--cookies", str(cache_path), 
-                    "--skip-download", "https://www.youtube.com"
+                    "yt-dlp", "--cookies-from-browser", cookies_browser, 
+                    "--cookies", str(cache_path), "--skip-download", "https://www.youtube.com"
                 ], capture_output=True, check=True)
-                console.print(f"[green]Cookies cached to {cache_path}[/green]")
+                shutil.copy(cache_path, stored_cookies)
             except Exception as e:
-                console.print(f"[bold red]Failed to extract cookies from {cookies_browser}: {e}[/bold red]")
-                cookies_browser = None # fallback to no cookies
-        
-        # Use the cached file for the actual download
-        if cache_path.exists():
-            cookies = cache_path
-            cookies_browser = None # Disable browser extraction in downloader.py as we have the file
-
+                console.print(f"[bold red]Failed to extract cookies: {e}[/bold red]")
+        active_cookies = cache_path if cache_path.exists() else None
+    
+    # Try Download
+    console.print(f"[bold cyan]Platform:[/bold cyan] [green]{platform}[/green]")
+    
+    # First attempt
     result_path = download_video(
-        url=url,
-        platform=platform,
-        output_dir=target_dir,
-        quality=quality,
-        download_thumbnail=not no_thumb,
-        download_transcript=not no_transcript,
-        cookies_browser=cookies_browser,
-        cookies_file=cookies
+        url=url, platform=platform, output_dir=target_dir, quality=quality,
+        download_thumbnail=not no_thumb, download_transcript=not no_transcript,
+        cookies_file=active_cookies, metadata_only=metadata_only, extract_audio=extract_audio
     )
     
+    # Second attempt fallback
+    if not result_path and not active_cookies and stored_cookies.exists():
+        console.print("[yellow]Attempt failed. Retrying with stored cookies...[/yellow]")
+        result_path = download_video(
+            url=url, platform=platform, output_dir=target_dir, quality=quality,
+            download_thumbnail=not no_thumb, download_transcript=not no_transcript,
+            cookies_file=stored_cookies, metadata_only=metadata_only, extract_audio=extract_audio
+        )
+    
     if result_path:
-        console.print(f"\n[bold green]✓ Successfully saved video bundle to: {result_path}[/bold green]")
+        console.print(f"\n[bold green]✓ Successfully processed: {result_path}[/bold green]")
     else:
-        console.print("\n[bold red]x Failed to download video bundle.[/bold red]")
+        console.print("\n[bold red]x Failed to process video bundle.[/bold red]")
         raise typer.Exit(code=1)
 
 @app.command("edit")
-def edit(
-    video_id: str = typer.Argument(..., help="Video ID or path to edit"),
-    preset: str = typer.Option("base", "-p", "--preset", help="Editing preset to apply")
-):
-    """
-    Edit a video using predefined presets (trim, caption, watermark, bgm).
-    """
-    console.print(f"[yellow]Edit command is under development. Preset: {preset}[/yellow]")
-
-@app.command("ai")
-def ai():
-    """
-    AI enhancement tools (crop, highlights, dub, thumbnail).
-    """
-    console.print("[yellow]AI commands are under development.[/yellow]")
-
-@app.command()
 def edit(
     video_path: Path = typer.Argument(..., help="Path to the video file to edit"),
     text: Optional[str] = typer.Option(None, "--text", help="Text to add as watermark"),
@@ -120,15 +99,11 @@ def edit(
     output: Optional[Path] = typer.Option(None, "-o", "--output", help="Path for the output video"),
     position: str = typer.Option("bottom_right", "--position", help="Position for the watermark")
 ):
-    """
-    Apply edits to a video (watermarking, etc.).
-    """
+    """Apply edits to a video (watermarking, etc.)."""
     if not video_path.exists():
         console.print(f"[bold red]File not found: {video_path}[/bold red]")
         raise typer.Exit(1)
-
     if output is None:
-        # Create a default output filename: name_edited.mp4
         output = video_path.parent / f"{video_path.stem}_edited.mp4"
 
     success = False
@@ -144,20 +119,6 @@ def edit(
         console.print(f"[bold green]✓ Edit successful![/bold green] Saved to: {output}")
     else:
         console.print("[bold red]x Edit failed.[/bold red]")
-
-@app.command("config")
-def config():
-    """
-    Manage configuration and API keys.
-    """
-    console.print("[yellow]Config command is under development.[/yellow]")
-
-@app.command("batch")
-def batch():
-    """
-    Process multiple URLs from a text file.
-    """
-    console.print("[yellow]Batch command is under development.[/yellow]")
 
 if __name__ == "__main__":
     app()
