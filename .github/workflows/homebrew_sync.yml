@@ -1,0 +1,23 @@
+name: Bump Homebrew Formula
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  homebrew:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout VideoCut-CLI
+        uses: actions/checkout@v3
+
+      - name: Update Homebrew Formula
+        uses: mislav/bump-homebrew-formula-action@v2
+        with:
+          formula-name: videocut
+          formula-path: Formula/videocut.rb
+          homebrew-tap: pendig/homebrew-tap
+          base-branch: main
+          download-url: https://github.com/pendig/videocut-cli/archive/refs/tags/${{ github.event.release.tag_name }}.tar.gz
+        env:
+          COMMITTER_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
