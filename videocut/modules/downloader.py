@@ -6,6 +6,10 @@ import yt_dlp
 from rich.console import Console
 from typing import Optional
 import imageio_ffmpeg
+import sys
+
+# Suppress yt-dlp deprecation warnings and other noisy environment outputs
+os.environ["YT_DLP_NO_DEPRECATION_WARNING"] = "1"
 
 console = Console()
 
@@ -61,10 +65,18 @@ def download_video(
     else:
         console.print(f"[dim]JS Runtime Found: {js_runtime}[/dim]")
     
+    # Common options to ensure silence
+    base_ydl_opts = {
+        'quiet': True,
+        'no_warnings': True,
+        'logger': SilentLogger(),
+        'noprogress': True,
+    }
+
     # We first extract info without downloading to get the video id
     ydl_opts_extract = {
+        **base_ydl_opts,
         'extract_flat': 'in_playlist',
-        'quiet': True,
     }
     
     if cookies_browser:
@@ -78,8 +90,7 @@ def download_video(
             video_id = info.get('id', 'unknown_id')
             title = info.get('title', 'Unknown Title')
             console.print(f"[bold cyan]Video Found:[/bold cyan] {title}")
-        except Exception as e:
-            # Silence internal errors, just show a clean message
+        except Exception:
             return None
 
     # Target directory for this specific video
@@ -87,12 +98,12 @@ def download_video(
     os.makedirs(video_dir, exist_ok=True)
     
     # Map quality to format string
-    # Force legacy formats (18=360p, 22=720p) first as they often bypass SABR 403 errors
     format_str = f'18/22/bestvideo[height<={quality}][ext=mp4]+bestaudio[ext=m4a]/best[height<={quality}][ext=mp4]/best'
     if quality == "best":
         format_str = '22/18/bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
         
     ydl_opts = {
+        **base_ydl_opts,
         'format': format_str,
         'outtmpl': str(video_dir / f'video_{quality}p.%(ext)s'),
         'writethumbnail': download_thumbnail,
@@ -109,14 +120,10 @@ def download_video(
                 'format': 'jpg',
             }
         ],
-        # Save metadata to json
         'writeinfojson': True,
-        # Default stability flags
         'nocheckcertificate': True,
         'ignoreerrors': True,
         'no_color': True,
-        'no_warnings': True,
-        'logger': SilentLogger(),
         'extractor_args': {
             'youtube': {
                 'player_client': ['android', 'web_embedded', 'ios', 'tv', 'web'],
@@ -127,9 +134,6 @@ def download_video(
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
         },
         'ffmpeg_location': ffmpeg_path,
-        'quiet': True,
-        'no_warnings': True,
-        'noprogress': True,
         'retries': 5,
         'socket_timeout': 30,
     }
@@ -145,8 +149,6 @@ def download_video(
         try:
             ydl.download([url])
             
-            # Verify if the video file actually exists (not just thumbnail)
-            # Find any file starting with 'video_' and not ending in .webp, .jpg, .json, .md
             video_files = [f for f in video_dir.iterdir() if f.name.startswith("video_") and f.suffix not in ['.webp', '.jpg', '.json', '.md', '.vtt']]
             
             if not video_files:
@@ -154,7 +156,6 @@ def download_video(
 
             console.print("[bold green]✓ Download complete![/bold green]")
             
-            # Post-process: convert info.json to a cleaner metadata.md
             info_json_path = list(video_dir.glob("*.info.json"))
             if info_json_path:
                 create_metadata_md(info_json_path[0], video_dir / "metadata.md")
