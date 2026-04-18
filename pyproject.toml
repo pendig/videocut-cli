@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "videocut"
+version = "0.1.0"
+description = "A CLI tool for video download and automation"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+    "yt-dlp>=2023.12.30",
+    "curl-cffi>=0.5.10",
+    "imageio-ffmpeg>=0.4.9",
+]
+
+[project.scripts]
+videocut = "videocut.cli:app"
+
+[tool.setuptools.packages.find]
+include = ["videocut*"]
