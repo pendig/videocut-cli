@@ -3,18 +3,34 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "videocut"
-version = "0.1.0"
-description = "A CLI tool for video download and automation"
+name = "videocut-cli"
+version = "0.2.0"
+description = "AI-powered video automation tool for Content Creators. Download, Edit, and Publish."
 readme = "README.md"
+authors = [
+    { name = "Pena Digital", email = "hello@penadigital.tech" }
+]
+license = { text = "MIT" }
+keywords = ["video", "automation", "yt-dlp", "ffmpeg", "ai", "content-creator", "downloader"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+]
 requires-python = ">=3.9"
 dependencies = [
-    "typer>=0.9.0",
+    "typer[all]>=0.9.0",
     "rich>=13.0.0",
     "yt-dlp>=2023.12.30",
     "curl-cffi>=0.5.10",
     "imageio-ffmpeg>=0.4.9",
+    "shellingham>=1.5.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/pendig/videocut-cli"
+Issues = "https://github.com/pendig/videocut-cli/issues"
 
 [project.scripts]
 videocut = "videocut.cli:app"

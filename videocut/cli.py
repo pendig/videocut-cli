@@ -1,5 +1,6 @@
 import typer
 from rich.console import Console
+from rich.table import Table
 from typing import Optional
 from pathlib import Path
 import warnings
@@ -11,7 +12,7 @@ warnings.simplefilter("ignore")
 os.environ["PYTHONWARNINGS"] = "ignore"
 os.environ["YT_DLP_NO_DEPRECATION_WARNING"] = "1"
 
-from videocut.modules.downloader import download_video
+from videocut.modules.downloader import download_video, check_ffmpeg, check_js_runtime
 from videocut.modules.editor import add_text_watermark, add_image_watermark
 from videocut.config import get_platform_dir, get_cookie_cache_path, get_cookie_store_path
 import subprocess
@@ -32,6 +33,7 @@ def download(
     cookies_browser: Optional[str] = typer.Option(None, "--cookies-browser", help="Browser to extract cookies from"),
     cookies: Optional[Path] = typer.Option(None, "--cookies", help="Path to a Netscape cookies.txt file.")
 ):
+    """Download video or audio from various platforms."""
     # Transform Shorts URL
     if "youtube.com/shorts/" in url:
         video_id = url.split("youtube.com/shorts/")[1].split("?")[0].split("&")[0]
@@ -119,6 +121,48 @@ def edit(
         console.print(f"[bold green]✓ Edit successful![/bold green] Saved to: {output}")
     else:
         console.print("[bold red]x Edit failed.[/bold red]")
+
+@app.command("doctor")
+def doctor():
+    """Check system dependencies and environment health."""
+    console.print("[bold cyan]🏥 VideoCut Doctor - System Health Check[/bold cyan]\n")
+    
+    table = Table(show_header=True, header_style="bold magenta")
+    table.add_column("Dependency", style="dim")
+    table.add_column("Status")
+    table.add_column("Path/Details")
+
+    # Check FFmpeg
+    ffmpeg_path = check_ffmpeg()
+    if ffmpeg_path:
+        table.add_row("FFmpeg", "[green]✓ Found[/green]", ffmpeg_path)
+    else:
+        table.add_row("FFmpeg", "[red]x Missing[/red]", "Install via 'brew install ffmpeg'")
+
+    # Check JS Runtime
+    js_runtime = check_js_runtime()
+    if js_runtime:
+        table.add_row("JS Runtime", "[green]✓ Found[/green]", js_runtime)
+    else:
+        table.add_row("JS Runtime", "[yellow]! Missing[/yellow]", "Install 'node' or 'deno' for better YouTube support")
+
+    # Check Python version
+    py_version = f"{os.sys.version_info.major}.{os.sys.version_info.minor}.{os.sys.version_info.micro}"
+    table.add_row("Python", "[green]✓ OK[/green]", py_version)
+
+    # Check Cookie Store
+    stored_cookies = get_cookie_store_path()
+    cookie_status = "[green]✓ Exists[/green]" if stored_cookies.exists() else "[dim]Not setup[/dim]"
+    table.add_row("Cookie Store", cookie_status, str(stored_cookies))
+
+    console.print(table)
+    
+    if not ffmpeg_path:
+        console.print("\n[bold red]Critical dependencies missing![/bold red] Please install FFmpeg to use VideoCut.")
+    elif not js_runtime:
+        console.print("\n[bold yellow]Note:[/bold yellow] YouTube downloads might be slower or unstable without a JS runtime (Node.js/Deno).")
+    else:
+        console.print("\n[bold green]System is healthy and ready to go![/bold green]")
 
 if __name__ == "__main__":
     app()
